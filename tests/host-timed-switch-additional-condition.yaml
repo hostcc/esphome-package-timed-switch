@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Ilia Sotnikov
+---
+# Verify that the timed switch does not activate if an additional condition is
+# false
+
+substitutions:
+  timed_switch_id: 'relay_1'
+  timed_switch_name: 'Relay 1'
+  timed_switch_initial_delay: '0.5'
+  timed_switch_physical_switch_id: 'relay_1_physical'
+  timed_switch_additional_timed_condition: 'false'
+
+host:
+
+script:
+  - id: test_script
+    then:
+      - switch.turn_on: ${timed_switch_id}_timed
+
+packages:
+  # Setup component under test
+  setup: !include
+    file: base/test_setup.yaml
+    vars:
+      relay_id: ${timed_switch_physical_switch_id}
+
+  # Perform the test actions
+  perform: !include
+    file: base/test_perform.yaml
+    vars:
+      setup_script: test_script
+
+  # Validate the results
+  validate: !include
+    file: base/test_validate.yaml
+    vars:
+      # Physical switch should be OFF at the end of the test
+      success_condition: return !id(${timed_switch_physical_switch_id}).state;
+      # Wait until test actions are complete
+      terminal_condition: return !id(test_script).is_running();
+
+esphome:
+  name: test-host-timed-switch-cond

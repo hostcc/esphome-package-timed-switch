@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Ilia Sotnikov
+---
+# Verify that extending a timed switch delay works correctly
+substitutions:
+  timed_switch_id: 'relay_1'
+  timed_switch_name: 'Relay 1'
+  timed_switch_initial_delay: '0.5'
+  timed_switch_physical_switch_id: 'relay_1_physical'
+
+host:
+
+script:
+  - id: test_script_extend
+    then:
+      # Turn on the timed switch
+      - switch.turn_on: ${timed_switch_id}_timed
+      # Wait for half of the initial delay
+      - delay: '${timed_switch_initial_delay|float / 2}s'
+      # Extend the timed switch delay by turning it on again
+      - switch.turn_on: ${timed_switch_id}_timed
+      # Wait for another half of the initial delay to ensure the original timer
+      # would have expired by now if not extended
+      - delay: '${timed_switch_initial_delay|float / 2}s'
+
+packages:
+  # Setup component under test
+  setup: !include
+    file: base/test_setup.yaml
+    vars:
+      relay_id: ${timed_switch_physical_switch_id}
+
+  # Perform the test actions
+  perform: !include
+    file: base/test_perform.yaml
+    vars:
+      setup_script: test_script_extend
+
+  # Validate the results
+  validate: !include
+    file: base/test_validate.yaml
+    vars:
+      # Physical switch should be ON at the end of the test
+      success_condition: return id(${timed_switch_physical_switch_id}).state;
+      # Wait until test actions are complete
+      terminal_condition: return !id(test_script_extend).is_running();
+      # Should be longer than the timed switch delay to ensure the timer has
+      # expired and physical switch state is stable
+      validation_timeout: '${timed_switch_initial_delay|float * 2}s'
+
+esphome:
+  name: test-host-extend

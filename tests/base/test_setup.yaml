@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Ilia Sotnikov
+---
+# Common package setup for tests
+substitutions:
+  relay_id:
+
+logger:
+  level: INFO
+
+# Source the package to test
+packages:
+  timed_switch: !include ../../main.yaml
+
+# Define a physical switch to be used in tests
+switch:
+  - platform: template
+    id: ${relay_id}
+    optimistic: true

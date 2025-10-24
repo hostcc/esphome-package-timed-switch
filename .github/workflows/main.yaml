@@ -1,0 +1,55 @@
+---
+name: main
+
+on:  # yamllint disable rule:truthy
+  pull_request:
+  release:
+    types: [published]
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - run: pip install yamllint
+      - run: yamllint .
+
+  esphome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - run: pip install -r requirements.txt
+      - run: esphome compile tests/esp32.yaml
+
+  e2e-tests:
+    name: Run end-to-end tests on 'host' platform
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        testfile:
+          - tests/host-timed-switch.yaml
+          - tests/host-timed-switch-override-before.yaml
+          - tests/host-timed-switch-override-after.yaml
+          - tests/host-timed-switch-additional-condition.yaml
+          - tests/host-timed-switch-extend.yaml
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - run: pip install -r requirements.txt
+      - name: Run test with '${{ matrix.testfile }}'
+        run: |
+          esphome run ${{ matrix.testfile }}
+        shell: bash
+        timeout-minutes: 2
