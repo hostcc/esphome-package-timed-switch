@@ -9,6 +9,11 @@ substitutions:
   timed_switch_name: ''
   timed_switch_id: ''
   timed_switch_additional_timed_condition: 'true'
+
+defaults:
+  # Substitutions referencing others might not get interpolated if placed in
+  # `substitutions` sections, especially when the package is used via multiple
+  # nested levels
   timed_switch_delay_control_name: '${timed_switch_name} turn off delay'
   timed_switch_timed_control_name: '${timed_switch_name} timed'
 
