@@ -33,8 +33,8 @@ lights. The example above is just one of many possible use cases.
      prevent timed operation based on external conditions (e.g., a light sensor
      detecting daylight).
 2. If those checks pass, the physical switch is turned on, followed by a wait
-   for the number of seconds configured in `{timed_switch_id}_turn_off_delay}`
-   control, and then turned off.
+   for the number of seconds configured (via `${timed_switch_id}_turn_off_delay`
+   control), and then turned off.
 3. The override switch (`${timed_switch_id}`) provides manual control over the
    physical switch and stops the running timed operation when manually turned
    on.
