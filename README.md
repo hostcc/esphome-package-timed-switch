@@ -1,90 +1,92 @@
-# ESPHome configuration for timed switch
+# ESPHome Package: Timed Switch
 
 ## Overview
 
-`timed_switch` is an ESPHome configuration that provides a timed switch behavior.
-It exposes a
-user-facing template switch and a secondary "timed" switch which, when turned
-on, runs a restartable script that turns a physical/internal switch on for a
-configurable number of seconds and then turns it off.
+What could be simpler than turning a switch on for a limited time with a single
+press in ESPHome? However, things get more complicated when you want to add an
+override — for example, turning on yard lights upon motion detection for a set
+period while still allowing manual control to keep them on until you turn them
+off.
 
-This pattern is useful for things like a garage door opener, irrigation valve,
-or any actuator where you want a single press to turn on the device for a
-limited time and allow subsequent presses to extend/reset the timer.
+The `timed_switch` package solves this problem by adding timed behavior with
+override capability to an ESPHome configuration.
 
-## Features
+For an existing switch, it exposes two user-facing switches:
+* One for triggering "timed" operation with a configurable delay.
+* Another for manual control, allowing you to turn the switch on or off without
+  interference from the timed operation.
 
-- Restartable timeout script: repeated activations while the script is running
-  will restart it (extend the running time).
-- Separate template switch for triggering the timed behavior and for manual
-  control.
-- Configured using simple substitutions to allow reuse in multiple devices.
+This package works with any existing `switch` entity in ESPHome, not just
+lights. The example above is just one of many possible use cases.
+
+## How It Works
+
+1. When `${timed_switch_id}_timed` is turned on, the package checks three
+   conditions in order:
+   * If the timed operation is already running, it is restarted, extending the
+     timer. In other words, turning on the timed switch again while the timed
+     operation is in progress resets the timer, prolonging the ON duration.
+   * If the physical switch is already ON, no action is taken, implementing the
+     override capability.
+   * If an additional condition (`${timed_switch_additional_timed_condition}`)
+     evaluates to `false`, the timed operation is skipped. This can be used to
+     prevent timed operation based on external conditions (e.g., a light sensor
+     detecting daylight).
+2. If those checks pass, the physical switch is turned on, followed by a wait
+   for the configured number of seconds, and then turned off.
+3. The override switch (`${timed_switch_id}`) provides manual control over the
+   physical switch and stops the running timed operation when manually turned
+   on.
 
 ## Configuration
 
-This component is designed to be included via substitutions (see the example
-below). The component relies on a physical switch entity, which it
-controls. The following substitutions are used in the component's
-template:
+This package is designed to be configured via substitutions. The following
+substitutions are available:
 
-- `timed_switch_max_delay` (integer, optional): maximum allowed timeout in
-  seconds for the `turn_off_delay` number input, defaults to `900` seconds.
-- `timed_switch_initial_delay` (integer, optional): initial value for the
-  `turn_off_delay` number input (seconds), defaults to `60` seconds.
-- `timed_switch_physical_switch_id` (string, required): the physical switch
-  ID (internal/physical) which will actually be turned on/off by the
-  component. This switch must exist in the device configuration.
-- `timed_switch_name` (string, optional): human-friendly name used for
-  entity names.
-- `timed_switch_id` (string, required): base ID used to generate entity IDs
-  (the component creates `${timed_switch_id}_timed`, `${timed_switch_id}`,
-  etc.).
-- `timed_switch_additional_timed_condition` (boolean, optional): an extra
-  lambda-style condition that can be injected to gate starting the timed
-  script, defaults to `true`.
+* `timed_switch_max_delay` (integer, optional, default: 900): Maximum allowed
+  timeout in seconds for the turn-off delay. Use this to cap how long the timed
+  operation can run.
+* `timed_switch_initial_delay` (integer, optional, default: 60): Initial value
+  (in seconds) for the turn-off delay.
+* `timed_switch_delay_step` (integer, optional, default: 1): Step size (in
+  seconds) for adjusting the turn-off delay.
+* `timed_switch_physical_switch_id` (string, required): ID of the physical
+  `switch` entity that the component will control. This must match an existing
+  `switch` ID in your device configuration.
+* `timed_switch_name` (string, required): Name for the timed switch, used as a
+  prefix for other names.
+* `timed_switch_id` (string, required): ID for the timed switch, used as a
+  prefix for other IDs.
+* `timed_switch_additional_timed_condition` (lambda/boolean, optional, default:
+  true): An optional C/C++ expression evaluated before starting the timed
+  script. If it evaluates to `false`, the timed start will be skipped.
+  Example usage: `timed_switch_additional_timed_condition: "id(my_sensor).state"`
 
-## Entities created
+**NOTE**: It is recommended to set the physical switch, referred to in
+`${timed_switch_physical_switch_id}`, as `internal: true` to avoid exposing it
+directly in Home Assistant, which could interfere with the timed switch
+behavior.
 
-- Number: `${timed_switch_id}_turn_off_delay` — seconds the physical switch
-  will remain ON when triggered. This number entity is created and managed by
-  the component itself; you do not need to define it in your configuration.
-- Script: `timed_switch_script_${timed_switch_id}` — a restartable script that
-  turns the physical switch on, delays for `turn_off_delay` seconds, then turns
-  it off. This script is part of the component and is created automatically.
-- Switch (physical): `${timed_switch_physical_switch_id}` — a reference to the physical switch ID. This switch must be defined elsewhere in your configuration; the component does not create or extend it.
-- Switch (template): `${timed_switch_id}_timed` — a switch that starts the
-  timed script when turned on (subject to guards). Turning this off will
-  directly turn the physical switch off.
-- Switch (template): `${timed_switch_id}` — the user-facing switch which will
-  stop the running script and turn the physical switch on when manually
-  toggled on; turning it off simply turns the physical switch off.
+## User-Visible Entities
 
-## How it works
+* **Number** (ID: `${timed_switch_id}_turn_off_delay`): The number of seconds
+  the physical switch will remain ON when triggered.
+* **Switch** (ID: `${timed_switch_id}_timed`): A switch that starts the timed
+  operation when turned on. Turning this off will directly turn the physical
+  switch off.
+* **Switch** (ID: `${timed_switch_id}`): Directly controls the physical switch
+  and blocks the timed operation. Any subsequent triggers to the timed switch
+  above will be ignored while this switch is ON. Turning it off simply turns
+  the physical switch off.
+* **HomeAssistant Action** (ID: `turn_on_timed_${timed_switch_id}`): An action
+  that can be used in Home Assistant automations to start the timed switch
+  behavior programmatically. It is possible to override the turn-off delay by
+  passing the parameter `delay_sec` a non-zero value. If `delay_sec` is zero,
+  the `${timed_switch_id}_turn_off_delay` number entity is used.
 
-1. When `${timed_switch_id}_timed` is turned on, the component checks three
-   conditions in order:
-   - If the physical switch is already ON: no action is taken (prevents
-     redundant starts).
-   - If `timed_switch_additional_timed_condition` evaluates to false: the
-     timed start is skipped.
-   - If the script is already running: the script is restarted (the timer is
-     reset/extended).
-2. If checks pass, the restartable script `timed_switch_script_${timed_switch_id}`
-   is executed. The script turns the physical switch on, waits for the
-   configured number of seconds (from the component-created `number` entity),
-   then turns the physical switch off.
-3. The primary template switch (`${timed_switch_id}`) provides manual control
-   over the physical switch and will stop the running timeout script when
-   manually turned on (ensuring explicit manual control overrides the timed
-   behavior).
+## Example Usage
 
-## Example usage
-
-Below is a compact example showing typical substitutions. You do NOT need to
-define the supporting `number` or `script` entities yourself — the component
-creates and manages them. The only entity you must provide in your device
-configuration is the physical `switch` referenced by
-`timed_switch_physical_switch_id`.
+Below is an example showing a typical configuration for a single switch.
 
 ```yaml
 substitutions:
@@ -104,18 +106,34 @@ switch:
     ...
 ```
 
-Usage note: the component creates `${timed_switch_id}_timed` and
-`${timed_switch_id}` template switches. Turning `${timed_switch_id}_timed` ON
-will start or restart the timeout script (the duration is read from the
-component-created `${timed_switch_id}_turn_off_delay` number). Turning
-`${timed_switch_id}` ON gives manual control and stops the running timeout
-script.
+Multiple switches can also be handled:
 
-## Notes
+```yaml
+substitutions:
+  timed_switch_max_delay: '300'
+  timed_switch_initial_delay: '60'
 
-- The component expects the physical switch ID referenced by
-  `timed_switch_physical_switch_id` to exist. In many templates the physical
-  switch is added as an `!extend` so the component can mark it internal.
-- The restartable script uses `mode: restart` so each execution resets the
-  delay — this allows using the timed switch with motion sensors or repeated
-  triggers to extend the active period.
+packages:
+  timed_switch:
+    url: github://hostcc/esphome-package-timed-switch/
+    ref: main
+    files:
+      - path: main.yaml
+        vars:
+          timed_switch_name: 'Tap 1'
+          timed_switch_id: 'tap_1'
+          timed_switch_physical_switch_id: 'garden_valve_1'
+      - path: main.yaml
+        vars:
+          timed_switch_name: 'Tap 2'
+          timed_switch_id: 'tap_2'
+          timed_switch_physical_switch_id: 'garden_valve_2'
+
+switch:
+  - id: garden_valve_1
+    internal: true
+    ...
+  - id: garden_valve_2
+    internal: true
+    ...
+```

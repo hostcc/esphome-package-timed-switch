@@ -2,12 +2,20 @@
 # Copyright (c) 2025 Ilia Sotnikov
 ---
 substitutions:
+  # Maximum delay for the timed switch to turn off (in seconds)
   timed_switch_max_delay: '900'
+  # Initial delay for the timed switch to turn off (in seconds)
   timed_switch_initial_delay: '60'
+  # Step for the delay control (in seconds)
   timed_switch_delay_step: '1'
+  # ID of the physical switch to control
   timed_switch_physical_switch_id: ''
+  # Name for the timed switch, used as a prefix for other names
   timed_switch_name: ''
+  # ID for the timed switch, used as a prefix for other IDs
   timed_switch_id: ''
+  # Additional condition in C++ syntax to allow timed operation, if false the
+  # timed switch operation will be skipped
   timed_switch_additional_timed_condition: 'true'
 
 defaults:
