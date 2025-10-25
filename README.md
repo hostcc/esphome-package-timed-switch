@@ -33,7 +33,8 @@ lights. The example above is just one of many possible use cases.
      prevent timed operation based on external conditions (e.g., a light sensor
      detecting daylight).
 2. If those checks pass, the physical switch is turned on, followed by a wait
-   for the configured number of seconds, and then turned off.
+   for the number of seconds configured in `{timed_switch_id}_turn_off_delay}`
+   control, and then turned off.
 3. The override switch (`${timed_switch_id}`) provides manual control over the
    physical switch and stops the running timed operation when manually turned
    on.
@@ -78,11 +79,41 @@ behavior.
   and blocks the timed operation. Any subsequent triggers to the timed switch
   above will be ignored while this switch is ON. Turning it off simply turns
   the physical switch off.
-* **HomeAssistant Action** (ID: `turn_on_timed_${timed_switch_id}`): An action
-  that can be used in Home Assistant automations to start the timed switch
-  behavior programmatically. It is possible to override the turn-off delay by
-  passing the parameter `delay_sec` a non-zero value. If `delay_sec` is zero,
-  the `${timed_switch_id}_turn_off_delay` number entity is used.
+
+## Home Assistant Actions
+
+The package provides the following Home Assistant actions to integrate with
+automations:
+
+* **`turn_on_timed_${timed_switch_id}`**
+
+  This action starts the timed switch behavior programmatically. It accepts an
+  optional parameter `delay_sec` to override the default turn-off delay:
+  * If `delay_sec` is a non-zero value, it specifies the duration (in seconds)
+    for which the physical switch will remain ON.
+  * If `delay_sec` is zero or omitted, the value of the
+    `${timed_switch_id}_turn_off_delay` number entity is used.
+
+### Example Automation
+
+Below is an example of how to use the `turn_on_timed_${timed_switch_id}` action
+in a Home Assistant automation:
+
+```yaml
+automation:
+  - alias: "Turn on timed switch with custom delay"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.motion_sensor
+        to: "on"
+    action:
+      - service: esphome.turn_on_timed_light
+        data:
+          delay_sec: 120  # Override the default delay with 120 seconds
+```
+
+In this example, the `turn_on_timed_light` action is triggered when motion is
+detected, and the physical switch remains ON for 120 seconds.
 
 ## Example Usage
 
