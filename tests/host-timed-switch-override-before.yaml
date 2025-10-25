@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Ilia Sotnikov
+---
+# Verify that overriding a timed switch before starting the timer works
+# correctly
+substitutions:
+  timed_switch_id: 'relay_1'
+  timed_switch_name: 'Relay 1'
+  timed_switch_initial_delay: '0.5'
+  timed_switch_physical_switch_id: 'relay_1_physical'
+
+host:
+
+script:
+  - id: test_script_override_before
+    then:
+      # Turn on the override first
+      - switch.turn_on: ${timed_switch_id}
+      # Then turn on the timed switch
+      - switch.turn_on: ${timed_switch_id}_timed
+      # Wait for the timed delay to pass, to ensure the physical switch is not
+      # turned off when the timer expires
+      - delay: ${timed_switch_initial_delay}s
+
+packages:
+  # Setup component under test
+  setup: !include
+    file: base/test_setup.yaml
+    vars:
+      relay_id: ${timed_switch_physical_switch_id}
+
+  # Perform the test actions
+  perform: !include
+    file: base/test_perform.yaml
+    vars:
+      setup_script: test_script_override_before
+
+  # Validate the results
+  validate: !include
+    file: base/test_validate.yaml
+    vars:
+      # Physical switch should be ON at the end of the test
+      success_condition: return id(${timed_switch_physical_switch_id}).state;
+      # Wait until test actions are complete
+      terminal_condition: return !id(test_script_override_before).is_running();
+      # Should be longer than the timed switch delay to ensure the timer has
+      # expired and physical switch state is stable
+      validation_timeout: '${timed_switch_initial_delay|float * 2}s'
+
+esphome:
+  name: test-host-override-before
