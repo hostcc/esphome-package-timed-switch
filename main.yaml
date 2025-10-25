@@ -52,7 +52,7 @@ script:
               // to track script is in progress.
               if (id(timed_switch_script_${timed_switch_id}_in_progress)) {
                 ESP_LOGI(
-                  "timed_switch",
+                  "timed_switch_${timed_switch_id}",
                   "Timed switch script is already running, restarting it"
                 );
                 return true;
@@ -62,7 +62,7 @@ script:
               // implement override functionality
               if (id(${timed_switch_physical_switch_id}).state) {
                 ESP_LOGI(
-                  "timed_switch",
+                  "timed_switch_${timed_switch_id}",
                   "Physical switch is already ON, not starting timed switch"
                 );
                 return false;
@@ -72,7 +72,7 @@ script:
               // operation if false
               if (!${timed_switch_additional_timed_condition}) {
                 ESP_LOGI(
-                  "timed_switch",
+                  "timed_switch_${timed_switch_id}",
                   "Additional condition is false, not starting timed switch"
                 );
                 return false;
@@ -88,9 +88,9 @@ script:
             # Log the start of the timed switch operation
             - lambda: |-
                 ESP_LOGI(
-                  "timed_switch",
-                  "Timed switch script started, turning on the '%s' switch",
-                  "${timed_switch_physical_switch_id}"
+                  "timed_switch_${timed_switch_id}",
+                  "Timed switch script started,"
+                  " turning on the '${timed_switch_physical_switch_id}' switch"
                 );
             # Turn on the physical switch
             - switch.turn_on: ${timed_switch_physical_switch_id}
@@ -103,16 +103,19 @@ script:
                     ? delay_sec : id(${timed_switch_id}_turn_off_delay).state
                 );
 
-                ESP_LOGI("timed_switch", "Delaying for %g seconds", result);
+                ESP_LOGI(
+                  "timed_switch_${timed_switch_id}",
+                  "Delaying for %g seconds", result
+                );
 
                 // `delay` action expects milliseconds from lambda
                 return result * 1000;
             # Turn off the physical switch after the delay
             - lambda: |-
                 ESP_LOGI(
-                  "timed_switch",
-                  "Timed switch script finished, turning off the '%s' switch",
-                  "${timed_switch_physical_switch_id}"
+                  "timed_switch_${timed_switch_id}",
+                  "Timed switch script finished,"
+                  " turning off the '${timed_switch_physical_switch_id}' switch"
                 );
             - switch.turn_off: ${timed_switch_physical_switch_id}
       # Mark the script as not in progress when done, regardless of whether
@@ -125,7 +128,7 @@ api:
   actions:
     # Expose the action to HomeAssistant to allow triggering timed switch,
     # possibly with a custom delay if `delay_sec` is non-zero
-    - action: turn_on_timed
+    - action: turn_on_timed_${timed_switch_id}
       variables:
         delay_sec: float
       then:
@@ -156,7 +159,10 @@ switch:
     lambda: 'return id(${timed_switch_physical_switch_id}).state;'
     turn_on_action:
       - lambda: |-
-          ESP_LOGI("timed_switch", "Stopping script for timed switch");
+          ESP_LOGI(
+            "timed_switch_${timed_switch_id}",
+            "Stopping script for timed switch"
+          );
       # Stop any running timed switch script to prevent it from turning off the
       # switch
       - script.stop: timed_switch_script_${timed_switch_id}
