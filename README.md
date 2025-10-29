@@ -44,6 +44,8 @@ lights. The example above is just one of many possible use cases.
 This package is designed to be configured via substitutions. The following
 substitutions are available:
 
+* `timed_switch_delay_name` (string, optional): Name for the turn-off delay
+  number entity. If not provided, defaults to `${timed_switch_name} turn off delay`.
 * `timed_switch_max_delay` (integer, optional, default: 900): Maximum allowed
   timeout in seconds for the turn-off delay. Use this to cap how long the timed
   operation can run.
@@ -69,6 +71,8 @@ substitutions are available:
   the restore behavior of the override switch, see
   [ESPhome documentation](https://esphome.io/components/switch/index.html#restore-mode)
   for possible values.
+* `timed_switch_timed_name` (string, optional): Name for the timed operation switch.
+  If not provided, defaults to `${timed_switch_name} timed`.
 * `timed_switch_timed_internal` (boolean, optional, default: false): If set to `true`, 
   the timed switch will be marked as `internal`, hiding it from Home Assistant UI.
 * `timed_switch_additional_timed_condition` (lambda/boolean, optional, default:
