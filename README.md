@@ -66,7 +66,7 @@ substitutions are available:
 * `timed_switch_id` (string, required): ID for the timed switch, used as a
   prefix for other IDs.
 * `timed_switch_internal` (boolean, optional, default: false): If set to `true`,
-  the override switch will be marked as `internal`, hiding it from Home Assistant UI.
+  the override switch (ID: `${timed_switch_id}`) will be marked as `internal`, hiding it from Home Assistant UI.
 * `timed_switch_restore` (string, optional, default: `RESTORE_DEFAULT_OFF`): Controls
   the restore behavior of the override switch, see
   [ESPHome documentation](https://esphome.io/components/switch/index.html#restore-mode)
@@ -74,7 +74,7 @@ substitutions are available:
 * `timed_switch_timed_name` (string, optional): Name for the timed operation switch.
   If not provided, defaults to `${timed_switch_name} timed`.
 * `timed_switch_timed_internal` (boolean, optional, default: false): If set to `true`,
-  the timed switch will be marked as `internal`, hiding it from Home Assistant UI.
+  the timed operation switch (ID: `${timed_switch_id}_timed`) will be marked as `internal`, hiding it from Home Assistant UI.
 * `timed_switch_additional_timed_condition` (lambda/boolean, optional, default:
   true): An optional C/C++ expression evaluated before starting the timed
   script. If it evaluates to `false`, the timed start will be skipped.
