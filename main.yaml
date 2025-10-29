@@ -8,12 +8,22 @@ substitutions:
   timed_switch_initial_delay: '60'
   # Step for the delay control (in seconds)
   timed_switch_delay_step: '1'
+  # Whether the delay number entity is internal
+  timed_switch_delay_internal: 'false'
+  # Whether to restore the delay number entity value on reboot
+  timed_switch_delay_restore: 'true'
   # ID of the physical switch to control
   timed_switch_physical_switch_id: ''
   # Name for the timed switch, used as a prefix for other names
   timed_switch_name: ''
   # ID for the timed switch, used as a prefix for other IDs
   timed_switch_id: ''
+  # Whether the override switch is internal
+  timed_switch_internal: 'false'
+  # Restore mode for the override switch
+  timed_switch_restore: 'RESTORE_DEFAULT_OFF'
+  # Whether override switch is internal
+  timed_switch_timed_internal: 'false'
   # Additional condition in C++ syntax to allow timed operation, if false the
   # timed switch operation will be skipped
   timed_switch_additional_timed_condition: 'true'
@@ -22,14 +32,18 @@ defaults:
   # Substitutions referencing others might not get interpolated if placed in
   # `substitutions` sections, especially when the package is used via multiple
   # nested levels
-  timed_switch_delay_control_name: '${timed_switch_name} turn off delay'
-  timed_switch_timed_control_name: '${timed_switch_name} timed'
+
+  # Name of the delay number entity
+  timed_switch_delay_name: '${timed_switch_name} turn off delay'
+  # Name of the timed switch control
+  timed_switch_timed_name: '${timed_switch_name} timed'
 
 number:
   # Number entity to configure the turn off delay
   - platform: template
     id: ${timed_switch_id}_turn_off_delay
-    name: '${timed_switch_delay_control_name}'
+    internal: ${timed_switch_delay_internal}
+    name: '${timed_switch_delay_name}'
     optimistic: true
     min_value: 1
     max_value: ${timed_switch_max_delay}
@@ -37,7 +51,7 @@ number:
     step: ${timed_switch_delay_step}
     unit_of_measurement: seconds
     icon: 'mdi:timer'
-    restore_value: true
+    restore_value: ${timed_switch_delay_restore}
 
 globals:
   # Global variable to track if the timed switch script is in progress, see the
@@ -152,8 +166,11 @@ api:
 switch:
   # Switch to control the timed operation
   - platform: template
-    name: '${timed_switch_timed_control_name}'
+    name: '${timed_switch_timed_name}'
     id: ${timed_switch_id}_timed
+    internal: ${timed_switch_timed_internal}
+    # The control won't be restored on reboot, because of its timed nature
+    restore_mode: ALWAYS_OFF
     # Reflect the actual physical switch state
     lambda: 'return id(${timed_switch_physical_switch_id}).state;'
     turn_on_action:
@@ -168,6 +185,8 @@ switch:
   - platform: template
     name: '${timed_switch_name}'
     id: ${timed_switch_id}
+    internal: ${timed_switch_internal}
+    restore_mode: ${timed_switch_restore}
     # Reflect the actual physical switch state
     lambda: 'return id(${timed_switch_physical_switch_id}).state;'
     turn_on_action:
