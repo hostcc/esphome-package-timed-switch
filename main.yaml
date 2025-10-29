@@ -22,7 +22,7 @@ substitutions:
   timed_switch_internal: 'false'
   # Restore mode for the override switch
   timed_switch_restore: 'RESTORE_DEFAULT_OFF'
-  # Whether override switch is internal
+  # Whether timed switch is internal
   timed_switch_timed_internal: 'false'
   # Additional condition in C++ syntax to allow timed operation, if false the
   # timed switch operation will be skipped
