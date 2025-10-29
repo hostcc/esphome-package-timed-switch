@@ -69,7 +69,7 @@ substitutions are available:
   the override switch will be marked as `internal`, hiding it from Home Assistant UI.
 * `timed_switch_restore` (string, optional, default: `RESTORE_DEFAULT_OFF`): Controls
   the restore behavior of the override switch, see
-  [ESPhome documentation](https://esphome.io/components/switch/index.html#restore-mode)
+  [ESPHome documentation](https://esphome.io/components/switch/index.html#restore-mode)
   for possible values.
 * `timed_switch_timed_name` (string, optional): Name for the timed operation switch.
   If not provided, defaults to `${timed_switch_name} timed`.
