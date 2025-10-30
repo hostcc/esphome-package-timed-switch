@@ -44,6 +44,8 @@ lights. The example above is just one of many possible use cases.
 This package is designed to be configured via substitutions. The following
 substitutions are available:
 
+* `timed_switch_delay_name` (string, optional): Name for the turn-off delay
+  number entity. If not provided, defaults to `${timed_switch_name} turn off delay`.
 * `timed_switch_max_delay` (integer, optional, default: 900): Maximum allowed
   timeout in seconds for the turn-off delay. Use this to cap how long the timed
   operation can run.
@@ -51,6 +53,11 @@ substitutions are available:
   (in seconds) for the turn-off delay.
 * `timed_switch_delay_step` (integer, optional, default: 1): Step size (in
   seconds) for adjusting the turn-off delay.
+* `timed_switch_delay_internal` (boolean, optional, default: false): If set to
+  `true`, the turn-off delay number entity will be marked as `internal`, hiding
+  it from Home Assistant UI.
+* `timed_switch_delay_restore` (boolean, optional, default: true): If set to `false`,
+  the turn-off delay will reset to `${timed_switch_initial_delay}` on each restart.
 * `timed_switch_physical_switch_id` (string, required): ID of the physical
   `switch` entity that the component will control. This must match an existing
   `switch` ID in your device configuration.
@@ -58,6 +65,16 @@ substitutions are available:
   prefix for other names.
 * `timed_switch_id` (string, required): ID for the timed switch, used as a
   prefix for other IDs.
+* `timed_switch_internal` (boolean, optional, default: false): If set to `true`,
+  the override switch (ID: `${timed_switch_id}`) will be marked as `internal`, hiding it from Home Assistant UI.
+* `timed_switch_restore` (string, optional, default: `RESTORE_DEFAULT_OFF`): Controls
+  the restore behavior of the override switch, see
+  [ESPHome documentation](https://esphome.io/components/switch/index.html#restore-mode)
+  for possible values.
+* `timed_switch_timed_name` (string, optional): Name for the timed operation switch.
+  If not provided, defaults to `${timed_switch_name} timed`.
+* `timed_switch_timed_internal` (boolean, optional, default: false): If set to `true`,
+  the timed operation switch (ID: `${timed_switch_id}_timed`) will be marked as `internal`, hiding it from Home Assistant UI.
 * `timed_switch_additional_timed_condition` (lambda/boolean, optional, default:
   true): An optional C/C++ expression evaluated before starting the timed
   script. If it evaluates to `false`, the timed start will be skipped.
