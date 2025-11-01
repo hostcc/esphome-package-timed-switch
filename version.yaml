@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Ilia Sotnikov
+---
+substitutions:
+  timed_switch_package_version: '0.0.0'
