@@ -38,6 +38,9 @@ defaults:
   # Name of the timed switch control
   timed_switch_timed_name: '${timed_switch_name} timed'
 
+packages:
+  version: !include version.yaml
+
 number:
   # Number entity to configure the turn off delay
   - platform: template
