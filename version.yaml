@@ -2,4 +2,4 @@
 # Copyright (c) 2025 Ilia Sotnikov
 ---
 substitutions:
-  timed_switch_package_version: '2.1.0'
+  timed_switch_package_version: '2.1.1'
