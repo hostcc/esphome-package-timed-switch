@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Ilia Sotnikov
+---
+substitutions:
+  relay_1_id: test_relay_1_physical
+  relay_2_id: test_relay_2_physical
+
+logger:
+  level: debug
+
+esphome:
+  name: test-esp32-multi
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+wifi:
+  ap:
+
+packages:
+  timed_switch_1: !include
+    file: ../main.yaml
+    vars:
+      timed_switch_name: 'Test Relay 1'
+      timed_switch_id: 'test_relay_1'
+      timed_switch_physical_switch_id: ${relay_1_id}
+
+  timed_switch_2: !include
+    file: ../main.yaml
+    vars:
+      timed_switch_name: 'Test Relay 2'
+      timed_switch_delay_name: 'Custom Delay 2'
+      timed_switch_timed_name: 'Custom Timed 2'
+      timed_switch_id: 'test_relay_2'
+      timed_switch_physical_switch_id: ${relay_2_id}
+
+switch:
+  - platform: template
+    id: ${relay_1_id}
+    optimistic: true
+
+  - platform: template
+    id: ${relay_2_id}
+    optimistic: true

@@ -44,8 +44,9 @@ lights. The example above is just one of many possible use cases.
 This package is designed to be configured via substitutions. The following
 substitutions are available:
 
-* `timed_switch_delay_name` (string, optional): Name for the turn-off delay
-  number entity. If not provided, defaults to `${timed_switch_name} turn off delay`.
+* `timed_switch_delay_name` (string, optional): Explicit name for the turn-off
+  delay number entity. If omitted or empty, defaults to
+  `${timed_switch_name} turn off delay`.
 * `timed_switch_max_delay` (integer, optional, default: 900): Maximum allowed
   timeout in seconds for the turn-off delay. Use this to cap how long the timed
   operation can run.
@@ -71,8 +72,8 @@ substitutions are available:
   the restore behavior of the override switch, see
   [ESPHome documentation](https://esphome.io/components/switch/index.html#restore-mode)
   for possible values.
-* `timed_switch_timed_name` (string, optional): Name for the timed operation switch.
-  If not provided, defaults to `${timed_switch_name} timed`.
+* `timed_switch_timed_name` (string, optional): Explicit name for the timed
+  operation switch. If omitted or empty, defaults to `${timed_switch_name} timed`.
 * `timed_switch_timed_internal` (boolean, optional, default: false): If set to `true`,
   the timed operation switch (ID: `${timed_switch_id}_timed`) will be marked as `internal`, hiding it from Home Assistant UI.
 * `timed_switch_additional_timed_condition` (lambda/boolean, optional, default:
@@ -84,6 +85,11 @@ substitutions are available:
 `${timed_switch_physical_switch_id}`, as `internal: true` to avoid exposing it
 directly in Home Assistant, which could interfere with the timed switch
 behavior.
+
+**NOTE**: `timed_switch_delay_name` and `timed_switch_timed_name` are supported
+as explicit overrides, but should be set to final names directly. Leaving them
+empty uses names derived from `timed_switch_name` without relying on nested
+substitution defaults.
 
 ## User-Visible Entities
 

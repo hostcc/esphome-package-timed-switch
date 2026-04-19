@@ -16,6 +16,12 @@ substitutions:
   timed_switch_physical_switch_id: ''
   # Name for the timed switch, used as a prefix for other names
   timed_switch_name: ''
+  # Optional explicit name for the delay number entity. If empty, a name is
+  # derived from timed_switch_name.
+  timed_switch_delay_name: ''
+  # Optional explicit name for the timed switch entity. If empty, a name is
+  # derived from timed_switch_name.
+  timed_switch_timed_name: ''
   # ID for the timed switch, used as a prefix for other IDs
   timed_switch_id: ''
   # Whether the override switch is internal
@@ -28,16 +34,6 @@ substitutions:
   # timed switch operation will be skipped
   timed_switch_additional_timed_condition: 'true'
 
-defaults:
-  # Substitutions referencing others might not get interpolated if placed in
-  # `substitutions` sections, especially when the package is used via multiple
-  # nested levels
-
-  # Name of the delay number entity
-  timed_switch_delay_name: '${timed_switch_name} turn off delay'
-  # Name of the timed switch control
-  timed_switch_timed_name: '${timed_switch_name} timed'
-
 packages:
   version: !include version.yaml
 
@@ -46,7 +42,13 @@ number:
   - platform: template
     id: ${timed_switch_id}_turn_off_delay
     internal: ${timed_switch_delay_internal}
-    name: '${timed_switch_delay_name}'
+    # Use explicit override name when provided; otherwise derive directly from
+    # timed_switch_name to avoid fragile nested substitution defaults.
+    name: >-
+      ${timed_switch_delay_name
+        if timed_switch_delay_name
+        else timed_switch_name ~ " turn off delay"
+      }
     optimistic: true
     min_value: 1
     max_value: ${timed_switch_max_delay}
@@ -169,7 +171,13 @@ api:
 switch:
   # Switch to control the timed operation
   - platform: template
-    name: '${timed_switch_timed_name}'
+    # Use explicit override name when provided; otherwise derive directly from
+    # timed_switch_name to avoid fragile nested substitution defaults.
+    name: >-
+      ${timed_switch_timed_name
+        if timed_switch_timed_name
+        else timed_switch_name ~ " timed"
+      }
     id: ${timed_switch_id}_timed
     internal: ${timed_switch_timed_internal}
     # The control won't be restored on reboot, because of its timed nature
